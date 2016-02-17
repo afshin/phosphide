@@ -8,7 +8,7 @@
 'use strict';
 
 import {
-  IAppShell, ICommandPalette, IShortcutManager
+  IAppShell, ICommandPalette, IShortcutManager, ICommandRegistry
 } from 'phosphide';
 
 import {
@@ -28,16 +28,25 @@ function resolve(container: Container): Promise<void> {
  */
 class Application {
 
-  static requires: Token<any>[] = [IAppShell, ICommandPalette, IShortcutManager];
+  static requires: Token<any>[] = [IAppShell, ICommandPalette, ICommandRegistry, IShortcutManager];
 
-  static create(shell: IAppShell, palette: ICommandPalette, shortcuts: IShortcutManager): Application {
-    return new Application(shell, palette, shortcuts);
+  static create(shell: IAppShell, palette: ICommandPalette, registry: ICommandRegistry, shortcuts: IShortcutManager): Application {
+    return new Application(shell, palette, registry, shortcuts);
   }
 
-  constructor(shell: IAppShell, palette: ICommandPalette, shortcuts: IShortcutManager) {
+  constructor(shell: IAppShell, palette: ICommandPalette, registry: ICommandRegistry, shortcuts: IShortcutManager) {
     palette.widget.title.text = 'Commands';
     palette.widget.id = 'command-palette';
     shell.addToLeftArea(palette.widget, { rank: 40 });
+    shell.sideBarChanged.connect((sender: any, side: string) => {
+      if (side !== 'left') {
+        return;
+      }
+      if (document.body.dataset['leftArea'] === palette.widget.id) {
+        registry.execute('command-palette:focus-input');
+      }
+    });
+
     shell.attach(document.body);
     window.addEventListener('resize', () => { shell.update(); });
   }

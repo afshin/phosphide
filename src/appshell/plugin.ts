@@ -31,6 +31,10 @@ import {
 } from 'phosphor-properties';
 
 import {
+  ISignal, Signal
+} from 'phosphor-signaling';
+
+import {
   SplitPanel
 } from 'phosphor-splitpanel';
 
@@ -161,6 +165,7 @@ class AppShell extends Widget implements IAppShell {
 
     this.layout = rootLayout;
 
+    // Add app shell commands to registry.
     registry.add([
       {
         id: 'appshell:activate-left',
@@ -224,6 +229,18 @@ class AppShell extends Widget implements IAppShell {
         }
       }
     ]);
+
+    let leftSideBar = this._leftHandler.sideBar;
+    let rightSideBar = this._rightHandler.sideBar;
+    leftSideBar.currentChanged.connect(this._onLeftSideBarChanged, this);
+    rightSideBar.currentChanged.connect(this._onRightSideBarChanged, this);
+  }
+
+  /**
+   * A signal emitted when either side bar title is changed.
+   */
+  get sideBarChanged(): ISignal<AppShell, string> {
+    return AppShellPrivate.sideBarChangedSignal.bind(this);
   }
 
   /**
@@ -273,12 +290,35 @@ class AppShell extends Widget implements IAppShell {
     this._dockPanel.insertTabAfter(widget);
   }
 
+  /**
+   * Handle the `currentChanged` signal from the left sidebar.
+   */
+  private _onLeftSideBarChanged(sender: SideBar, args: IChangedArgs<Title>): void {
+    this.sideBarChanged.emit('left');
+  }
+
+  private _onRightSideBarChanged(sender: SideBar, args: IChangedArgs<Title>): void {
+    this.sideBarChanged.emit('right');
+  }
+
   private _topPanel: Panel;
   private _hboxPanel: BoxPanel;
   private _dockPanel: DockPanel;
   private _hsplitPanel: SplitPanel;
   private _leftHandler: SideBarHandler;
   private _rightHandler: SideBarHandler;
+}
+
+
+/**
+ * The namespace for the `AppShell` class private data.
+ */
+namespace AppShellPrivate {
+  /**
+   * A signal emitted when either side bar title is changed.
+   */
+  export
+  const sideBarChangedSignal = new Signal<AppShell, string>();
 }
 
 

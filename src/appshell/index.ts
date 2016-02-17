@@ -12,6 +12,10 @@ import {
 } from 'phosphor-di';
 
 import {
+  ISignal
+} from 'phosphor-signaling';
+
+import {
   Widget
 } from 'phosphor-widget';
 
@@ -46,6 +50,11 @@ interface IMainAreaOptions { /* TODO */ }
  */
 export
 interface IAppShell extends Widget {
+  /**
+   * A signal emitted when either side bar title is changed.
+   */
+  sideBarChanged: ISignal<IAppShell, string>;
+
   /**
    * Add a widget to the top content area.
    *
